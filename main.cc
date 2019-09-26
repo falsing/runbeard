@@ -6,20 +6,6 @@
 #include <cstring>
 #include<iomanip>
 
-template<typename T>
-void LogSeq(std::vector<T>& cards) {
-#ifndef NDEBUG
-	std::ostringstream oss;
-	oss <<"[";
-	int index = 0;
-	for (auto v : cards) {
-		++index;
-		oss << std::setw(2) << int(v) << "," ;
-	}
-	oss << "]";
-	std::cout<< oss.str() << "\n";
-#endif
-}
 enum{
 	__Base = 0,
 	__Peng = 1,
@@ -38,7 +24,85 @@ const char * _desc[] = {
 	"AAa:%d\n",
 	"Dui:%d\n"
 };
+bool Check(std::vector<char>& t, char lst, int & total); 
 char record[20][7] = {0,};
+int main()
+{
+	std::vector<char> c = { 3,2,1,0,0,0,1,0,0,1,
+		2,1,1,0,0,0,0,4,0,2};
+	char lst = 1;
+	int total = 0;
+	for (int i=0;i<20;++i) {
+		if (c[i] == 4) {
+			c[i] = 0;
+			printf("TiPao:Check:4:%d\n", (i+1));
+			continue;
+		}
+		if (c[i] == 3 && lst != (i+1)) {
+			total -= 3;
+			c[i] = 0;
+			printf("Kan:Check:3:%d\n", (i+1));
+			continue;
+		}
+		total += c[i];
+	}
+	int mod = total %3;
+	printf("%d\n", total);
+	bool bFind = false;
+	switch(mod)
+	{
+		case 0:
+			{
+				std::vector<char> tmp(c);
+				int ttl = total;
+				if (Check(tmp, lst, ttl)) {
+					bFind = true;
+					printf("succ:Check\n");
+					break;
+				} else {
+					printf("fail:\n");
+				}
+			}
+			break;
+		case 2:
+			{
+				for ( int i=0;i<20;++i) {
+					if (c[i] == 2 || (c[i] == 3 && lst != 0 && lst == (i+1))) {
+						if (i == 19) {
+							printf("loop:%d\n", i);
+						}
+						int ttl = total - 2;
+						std::vector<char> tmp(c);
+						tmp[i] -= 2;
+						memset(record, 0x00, sizeof(record));
+						if (Check(tmp, lst, ttl)) {
+							record[i][__Dui] ++;
+							bFind = true;
+							printf("Dui:Check:%d\n", (i+1));
+							break;
+						}
+					}
+				}
+				if (!bFind ) {
+					printf("fail:\n");
+				}
+			}
+			break;
+		default:
+			break;
+	}
+	printf("\n\ncheck finished:\n\n");
+	if (bFind) {
+		for (int i=0;i<20;++i) {
+			for (int j=1;j<7;++j) {
+				for (int z=0;z<record[i][j];++z) {
+					printf(_desc[j], i+1);
+				}
+			}
+		}
+		return 0;
+	}
+}
 bool Check(std::vector<char>& t, char lst, int & total) {
 	for (int i=0;i<20;++i) {
 		if (t[i] == 3 && record[i][0] == 0) {
@@ -155,81 +219,4 @@ bool Check(std::vector<char>& t, char lst, int & total) {
 
 	if (total == 0) return true;
 	return false;
-}
-int main()
-{
-	std::vector<char> c = { 3,2,1,0,0,0,1,0,0,1,
-		2,1,1,0,0,0,0,4,0,2};
-	char lst = 1;
-	int total = 0;
-	for (int i=0;i<20;++i) {
-		if (c[i] == 4) {
-			c[i] = 0;
-			printf("TiPao:Check:4:%d\n", (i+1));
-			continue;
-		}
-		if (c[i] == 3 && lst != (i+1)) {
-			total -= 3;
-			c[i] = 0;
-			printf("Kan:Check:3:%d\n", (i+1));
-			continue;
-		}
-		total += c[i];
-	}
-	int mod = total %3;
-	printf("%d\n", total);
-	bool bFind = false;
-	switch(mod)
-	{
-		case 0:
-			{
-				std::vector<char> tmp(c);
-				int ttl = total;
-				if (Check(tmp, lst, ttl)) {
-					bFind = true;
-					printf("succ:Check\n");
-					break;
-				} else {
-					printf("fail:\n");
-				}
-			}
-			break;
-		case 2:
-			{
-				for ( int i=0;i<20;++i) {
-					if (c[i] == 2 || (c[i] == 3 && lst != 0 && lst == (i+1))) {
-						if (i == 19) {
-							printf("loop:%d\n", i);
-						}
-						int ttl = total - 2;
-						std::vector<char> tmp(c);
-						tmp[i] -= 2;
-						memset(record, 0x00, sizeof(record));
-						if (Check(tmp, lst, ttl)) {
-							record[i][__Dui] ++;
-							bFind = true;
-							printf("Dui:Check:%d\n", (i+1));
-							break;
-						}
-					}
-				}
-				if (!bFind ) {
-					printf("fail:\n");
-				}
-			}
-			break;
-		default:
-			break;
-	}
-	printf("\n\ncheck finished:\n\n");
-	if (bFind) {
-		for (int i=0;i<20;++i) {
-			for (int j=1;j<7;++j) {
-				for (int z=0;z<record[i][j];++z) {
-					printf(_desc[j], i+1);
-				}
-			}
-		}
-		return 0;
-	}
 }
